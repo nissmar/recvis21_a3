@@ -3,7 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
 
-nclasses = 20 
+nclasses = 20
+
 
 class Net0(nn.Module):
     def __init__(self):
@@ -22,10 +23,11 @@ class Net0(nn.Module):
         x = F.relu(self.fc1(x))
         return self.fc2(x)
 
-def Net():    
+
+def Net():
     model = models.resnet101(pretrained=True)
     for param in model.parameters():
         param.requires_grad = False
-    model.fc = nn.Linear(2048,nclasses, bias=True)
+    model.fc = nn.Linear(2048, nclasses, bias=True)
 
     return model
