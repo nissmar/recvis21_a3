@@ -6,8 +6,10 @@ import torch.optim as optim
 from torchvision import datasets
 from torch.autograd import Variable
 from tqdm import tqdm
+import time as time
 
 if __name__ == "__main__":
+    t0 =time.time()
 
     # Training settings
     parser = argparse.ArgumentParser(description="RecVis A3 training script")
@@ -76,7 +78,7 @@ if __name__ == "__main__":
 
     train_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(
-            args.data + "/train_images", transform=data_transforms_train
+            args.data + "/train_images", transform=data_transforms
         ),
         batch_size=args.batch_size,
         shuffle=True,
@@ -124,6 +126,8 @@ if __name__ == "__main__":
                     )
                 )
 
+    ac_hist = []
+
     def validation():
         model.eval()
         validation_loss = 0
@@ -140,6 +144,8 @@ if __name__ == "__main__":
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
         validation_loss /= len(val_loader.dataset)
+        ac_hist.append((100.0 * correct / len(val_loader.dataset)).item())
+
         print(
             "\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)".format(
                 validation_loss,
@@ -162,3 +168,5 @@ if __name__ == "__main__":
                 + model_file
                 + "` to generate the Kaggle formatted csv file\n"
             )
+    print(ac_hist)
+    print("TIME:", (time.time()-t0)/60, "minutes")

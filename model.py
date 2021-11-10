@@ -26,8 +26,11 @@ class Net0(nn.Module):
 
 def Net():
     model = models.resnet101(pretrained=True)
+    n_layer = 0
     for param in model.parameters():
-        param.requires_grad = False
+        n_layer += 1
+        if n_layer < 314 - 11:
+            param.requires_grad = False
     model.fc = nn.Linear(2048, nclasses, bias=True)
 
     return model
