@@ -72,10 +72,12 @@ if __name__ == "__main__":
         os.makedirs(args.experiment)
 
     # Data initialization and loading
-    from data import data_transforms
+    from data import data_transforms, data_transforms_train
 
     train_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder(args.data + "/train_images", transform=data_transforms),
+        datasets.ImageFolder(
+            args.data + "/train_images", transform=data_transforms_train
+        ),
         batch_size=args.batch_size,
         shuffle=True,
         num_workers=1,

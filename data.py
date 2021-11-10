@@ -7,7 +7,7 @@ import torchvision.transforms as transforms
 # by default, we resize the images to 64 x 64 in size
 # and normalize them to mean = 0 and standard-deviation = 1 based on statistics collected from
 # the training set
-data_transforms = transforms.Compose(
+data_transforms0 = transforms.Compose(
     [
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
@@ -16,6 +16,21 @@ data_transforms = transforms.Compose(
 )
 
 
-def test():
-    print("hello world")
+data_transforms_train = transforms.Compose(
+    [
+        transforms.RandomHorizontalFlip(),
+        transforms.Resize((240, 240)),
+        transforms.RandomCrop(224),
+        transforms.ColorJitter(
+            brightness=(0.5, 1.5),
+            contrast=(0.5, 1.5),
+            saturation=(0.5, 1.5),
+            hue=(-0.05, 0.05),
+        ),
+        transforms.ToTensor(),
+    ]
+)
 
+data_transforms = transforms.Compose(
+    [transforms.Resize((224, 224)), transforms.ToTensor(),]
+)
