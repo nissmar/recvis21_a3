@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     train_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(
-            args.data + "/train_images", transform=data_transforms
+            args.data + "/train_images", transform=data_transforms_train
         ),
         batch_size=args.batch_size,
         shuffle=True,
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         train(epoch)
         validation()
         model_file = args.experiment + "/model_" + str(epoch) + ".pth"
-        if epoch == args.epochs:
+        if epoch>15:
             torch.save(model.state_dict(), model_file)
             print(
                 "Saved model to "
