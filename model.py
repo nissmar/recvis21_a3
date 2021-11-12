@@ -52,9 +52,6 @@ def Net():
         nn.Linear(100, 100, bias=True),
         nn.ReLU(inplace=True),
         nn.Linear(100, nclasses, bias=True),
-        nn.Softmax(1),
     )
-    # model.fc = nn.Sequential(nn.Linear(100, nclasses, bias=True), nn.Softmax(nclasses))
-
     return model
 

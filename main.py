@@ -35,6 +35,13 @@ if __name__ == "__main__":
         help="number of epochs to train (default: 10)",
     )
     parser.add_argument(
+        "--pseudoepochs",
+        type=int,
+        default=0,
+        metavar="N",
+        help="number of epochs to train on the pseudo labels (default: 0)",
+    )
+    parser.add_argument(
         "--lr",
         type=float,
         default=0.1,
@@ -76,6 +83,14 @@ if __name__ == "__main__":
     # Data initialization and loading
     from data import data_transforms, data_transforms_train
 
+    pseudo_label_loader = torch.utils.data.DataLoader(
+        datasets.ImageFolder("pseudo_label", transform=data_transforms_train
+        ),
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=1,
+    )
+
     train_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(
             args.data + "/train_images", transform=data_transforms_train
@@ -96,17 +111,21 @@ if __name__ == "__main__":
     from model import Net
 
     model = Net()
+
+    #pre-trained model
+    # model.load_state_dict( torch.load("models/model_10.pth"))
     if use_cuda:
         print("Using GPU")
         model.cuda()
     else:
         print("Using CPU")
 
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.momentum, 0.999))
 
-    def train(epoch):
+    def train(epoch, loader):
         model.train()
-        for batch_idx, (data, target) in enumerate(train_loader):
+        for batch_idx, (data, target) in enumerate(loader):
             if use_cuda:
                 data, target = data.cuda(), target.cuda()
             optimizer.zero_grad()
@@ -120,8 +139,8 @@ if __name__ == "__main__":
                     "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
                         epoch,
                         batch_idx * len(data),
-                        len(train_loader.dataset),
-                        100.0 * batch_idx / len(train_loader),
+                        len(loader.dataset),
+                        100.0 * batch_idx / len(loader),
                         loss.data.item(),
                     )
                 )
@@ -155,11 +174,18 @@ if __name__ == "__main__":
             )
         )
 
+        return ac_hist[-1]
+
+    tresh = 86
     for epoch in range(1, args.epochs + 1):
-        train(epoch)
-        validation()
+        if epoch<=args.pseudoepochs:
+            train(epoch, pseudo_label_loader)
+        else:
+            train(epoch,train_loader)
+        val = validation()
         model_file = args.experiment + "/model_" + str(epoch) + ".pth"
-        if epoch>15:
+        if epoch==args.epochs or val>tresh:
+            tresh+=1
             torch.save(model.state_dict(), model_file)
             print(
                 "Saved model to "
@@ -168,5 +194,6 @@ if __name__ == "__main__":
                 + model_file
                 + "` to generate the Kaggle formatted csv file\n"
             )
+            break
     print(ac_hist)
     print("TIME:", (time.time()-t0)/60, "minutes")
