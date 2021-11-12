@@ -24,7 +24,7 @@ class Net0(nn.Module):
         return self.fc2(x)
 
 
-def Net():
+def Net_101():
     model = models.resnet101(pretrained=True)
     n_layer = 0
     for param in model.parameters():
@@ -34,3 +34,27 @@ def Net():
     model.fc = nn.Linear(2048, nclasses, bias=True)
 
     return model
+
+
+def Net():
+    model = models.resnet50(pretrained=True)
+    n_layer = 0
+    for param in model.parameters():
+        n_layer += 1
+        param.requires_grad = False
+        # else:
+        #     print(param.shape)
+    model.fc = nn.Sequential(
+        nn.Linear(2048, 100, bias=True),
+        nn.ReLU(inplace=True),
+        nn.Linear(100, 100, bias=True),
+        nn.ReLU(inplace=True),
+        nn.Linear(100, 100, bias=True),
+        nn.ReLU(inplace=True),
+        nn.Linear(100, nclasses, bias=True),
+        nn.Softmax(1),
+    )
+    # model.fc = nn.Sequential(nn.Linear(100, nclasses, bias=True), nn.Softmax(nclasses))
+
+    return model
+

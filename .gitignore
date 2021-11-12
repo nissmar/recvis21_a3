@@ -2,3 +2,7 @@ bird_dataset
 __pycache__
 experiment
 .DS_Store
+images
+correct
+incorrect
+pseudo_label*
