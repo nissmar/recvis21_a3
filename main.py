@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
         return ac_hist[-1]
 
-    tresh = 89/103
+    tresh = 89/103*100
     for epoch in range(1, args.epochs + 1):
         if epoch<=args.pseudoepochs:
             train(epoch, pseudo_label_loader)
