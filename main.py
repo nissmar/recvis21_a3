@@ -111,6 +111,7 @@ if __name__ == "__main__":
     from model import Net
 
     model = Net()
+    # model  = load_resNet("experiment/res50.pth")
 
     #pre-trained model
     # model.load_state_dict( torch.load("models/model_10.pth"))
@@ -120,8 +121,8 @@ if __name__ == "__main__":
     else:
         print("Using CPU")
 
-    # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.momentum, 0.999))
+    optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, momentum=args.momentum)
+    # optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.momentum, 0.999))
 
     def train(epoch, loader):
         model.train()
@@ -176,7 +177,7 @@ if __name__ == "__main__":
 
         return ac_hist[-1]
 
-    tresh = 86
+    tresh = 89/103
     for epoch in range(1, args.epochs + 1):
         if epoch<=args.pseudoepochs:
             train(epoch, pseudo_label_loader)
@@ -185,7 +186,7 @@ if __name__ == "__main__":
         val = validation()
         model_file = args.experiment + "/model_" + str(epoch) + ".pth"
         if epoch==args.epochs or val>tresh:
-            tresh+=1
+            tresh=val
             torch.save(model.state_dict(), model_file)
             print(
                 "Saved model to "
@@ -194,6 +195,5 @@ if __name__ == "__main__":
                 + model_file
                 + "` to generate the Kaggle formatted csv file\n"
             )
-            break
     print(ac_hist)
     print("TIME:", (time.time()-t0)/60, "minutes")

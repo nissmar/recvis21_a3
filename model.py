@@ -23,8 +23,11 @@ class Net0(nn.Module):
         x = F.relu(self.fc1(x))
         return self.fc2(x)
 
-
-def Net_101():
+def set_bn_eval(module):
+    if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
+        module.eval()
+        
+def Net():
     model = models.resnet101(pretrained=True)
     n_layer = 0
     for param in model.parameters():
@@ -32,26 +35,28 @@ def Net_101():
         if n_layer < 314 - 11:
             param.requires_grad = False
     model.fc = nn.Linear(2048, nclasses, bias=True)
+    model.apply(set_bn_eval)
 
     return model
 
 
-def Net():
-    model = models.resnet50(pretrained=True)
-    n_layer = 0
+def Net_vgg():
+    model = models.vgg16(pretrained=True)
     for param in model.parameters():
-        n_layer += 1
         param.requires_grad = False
-        # else:
-        #     print(param.shape)
-    model.fc = nn.Sequential(
-        nn.Linear(2048, 100, bias=True),
+
+    headModel = nn.Sequential(
+        nn.Linear(25088, 2048),
         nn.ReLU(inplace=True),
-        nn.Linear(100, 100, bias=True),
+        nn.Dropout(p=0.5, inplace=False),
+        nn.Linear(2048, 2048),
         nn.ReLU(inplace=True),
-        nn.Linear(100, 100, bias=True),
-        nn.ReLU(inplace=True),
-        nn.Linear(100, nclasses, bias=True),
+        nn.Dropout(p=0.5, inplace=False),
+        nn.Linear(2048, 20)
     )
+    model.classifier = headModel
     return model
 
+model = Net()
+# print(model)
+# print(model(torch.rand((1,3,224,224))))
