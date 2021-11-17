@@ -108,10 +108,10 @@ if __name__ == "__main__":
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
-    from model import Net
+    from model import Net, loadNet
 
     model = Net()
-    # model  = load_resNet("experiment/res50.pth")
+    # model = loadNet("experiment/modeltrained100.pth", 1)
 
     #pre-trained model
     # model.load_state_dict( torch.load("models/model_10.pth"))
@@ -121,8 +121,10 @@ if __name__ == "__main__":
     else:
         print("Using CPU")
 
-    optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, momentum=args.momentum)
+    optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, momentum=args.momentum, weight_decay = 3*0.0001)
     # optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.momentum, 0.999))
+    # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
+    # scheduler =  optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
     def train(epoch, loader):
         model.train()
@@ -145,6 +147,7 @@ if __name__ == "__main__":
                         loss.data.item(),
                     )
                 )
+        # scheduler.step()
 
     ac_hist = []
 
@@ -164,7 +167,7 @@ if __name__ == "__main__":
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
         validation_loss /= len(val_loader.dataset)
-        ac_hist.append((100.0 * correct / len(val_loader.dataset)).item())
+        ac_hist.append((100.0 * correct / len(val_loader.dataset)).detach().item())
 
         print(
             "\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)".format(
@@ -177,7 +180,7 @@ if __name__ == "__main__":
 
         return ac_hist[-1]
 
-    tresh = 89/103*100
+    tresh = 91
     for epoch in range(1, args.epochs + 1):
         if epoch<=args.pseudoepochs:
             train(epoch, pseudo_label_loader)

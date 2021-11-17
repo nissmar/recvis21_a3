@@ -5,6 +5,14 @@ import torchvision.models as models
 
 nclasses = 20
 
+def number_of_params(arr):
+    s=0
+    for e in arr:
+        c=1
+        for x in e:
+            c*=x
+        s+=c
+    return s
 
 class Net0(nn.Module):
     def __init__(self):
@@ -27,19 +35,6 @@ def set_bn_eval(module):
     if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
         module.eval()
         
-def Net():
-    model = models.resnet101(pretrained=True)
-    n_layer = 0
-    for param in model.parameters():
-        n_layer += 1
-        if n_layer < 314 - 11:
-            param.requires_grad = False
-    model.fc = nn.Linear(2048, nclasses, bias=True)
-    model.apply(set_bn_eval)
-
-    return model
-
-
 def Net_vgg():
     model = models.vgg16(pretrained=True)
     for param in model.parameters():
@@ -57,6 +52,58 @@ def Net_vgg():
     model.classifier = headModel
     return model
 
+def Net_res101():
+    model = models.resnet101(pretrained=True)
+    n_layer = 0
+    for param in model.parameters():
+        n_layer += 1
+        if n_layer < 314 - 11:
+            param.requires_grad = False
+    model.fc = nn.Linear(2048, nclasses, bias=True)
+    model.apply(set_bn_eval)
+
+    return model
+
+def Net_incep():
+    model = torch.hub.load('pytorch/vision:v0.10.0', 'inception_v3', pretrained=True)
+    for param in model.parameters():
+        param.requires_grad = False
+    model.AuxLogits.fc = nn.Linear(768, nclasses)
+    model.fc = nn.Linear(2048, nclasses)
+
+    return model
+
+
+
+def loadNet(str, train_lay):
+    model = models.resnet101(pretrained=True)
+    model.fc = nn.Linear(2048, nclasses, bias=True)
+    model.load_state_dict(torch.load(str))
+
+    requires_grad = ['layer4.1.conv2.weight', 'layer4.1.conv3.weight', 'layer4.2.conv1.weight', 'layer4.2.conv2.weight','layer4.2.conv3.weight','fc.weight','fc.bias'][5-train_lay:]
+    for name, param in model.named_parameters():
+        if not(name in requires_grad):
+            param.requires_grad = False
+        
+    print('MODEL LOADED',str)
+    print([p.shape for p in model.parameters() if p.requires_grad])
+
+    return model
+
+def Net():
+    model = models.resnet101(pretrained=True)
+    n_layer = 0
+    # requires_grad = ['layer4.1.conv1.weight', 'layer4.1.conv2.weight','layer4.1.conv3.weight']
+    requires_grad = ['conv1.weight', 'layer1.0.conv1.weight']
+
+    for name, param in model.named_parameters():
+        if not(name in requires_grad):
+            param.requires_grad = False
+    model.fc = nn.Linear(2048, nclasses, bias=True)
+    return model
+
 model = Net()
-# print(model)
+print([p.shape for p in model.parameters() if p.requires_grad])
+print(number_of_params([p.shape for p in model.parameters() if p.requires_grad]))
+
 # print(model(torch.rand((1,3,224,224))))
