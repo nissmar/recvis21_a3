@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs",
         type=int,
-        default=10,
+        default=20,
         metavar="N",
         help="number of epochs to train (default: 10)",
     )
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--lr",
         type=float,
-        default=0.1,
+        default=0.008,
         metavar="LR",
         help="learning rate (default: 0.01)",
     )
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
-    from model import Net, loadNet, load_res_50
+    from model import Net
 
     model = Net()
     # model = loadNet("experiment/modeltrained100.pth", 1)
