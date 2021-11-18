@@ -35,7 +35,7 @@ def load_res_50(str = "models/res50_91.pth"):
     model.load_state_dict(torch.load(str))
     return model
     
-def Net():
+def Net50():
     model = models.resnet50(pretrained=True)
     requires_grad = ['layer4.1.conv1.weight','layer4.1.conv2.weight','layer4.1.conv3.weight']
 
@@ -47,7 +47,43 @@ def Net():
     return model
 
 
-# model = load_res_50()
+def Net101_2():
+    model = models.resnet101(pretrained=True)
+    # requires_grad = conv_to_activate([[2,1,i%3] for i in range(3)]+[[4,1,i%3] for i in range(3)])
+
+    # for name, param in model.named_parameters():
+    #     if not(name in requires_grad):
+    #         param.requires_grad = False
+
+    model.fc = nn.Linear(2048, 2, bias=True)
+    return model
+
+
+def Net101_18():
+    model = models.resnet101(pretrained=True)
+    # requires_grad = conv_to_activate([[3,22,2],[4,1,1]])
+    requires_grad=[]
+    for name, param in model.named_parameters():
+        if not(name in requires_grad):
+            param.requires_grad = False
+
+    model.fc = nn.Linear(2048, 18, bias=True)
+    return model
+
+def Net101_18_pre():
+    model = models.resnet101(pretrained=True)
+    model.fc = nn.Linear(2048, 18, bias=True)
+    model.load_state_dict(torch.load("models/res101_18_init_88.pth"))
+    print("model preloaded")
+    for name, param in model.named_parameters():
+        if ("bn" in name or "layer4" in name):
+            param.requires_grad = False
+    return model
+
+
+
+
+# model = Net101_18_pre()
 # print([p.shape for p in model.parameters() if p.requires_grad])
 # print(number_of_params([p.shape for p in model.parameters() if p.requires_grad]))
 
