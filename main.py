@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--momentum",
         type=float,
-        default=0.5,
+        default=0.9,
         metavar="M",
         help="SGD momentum (default: 0.5)",
     )
@@ -108,11 +108,11 @@ if __name__ == "__main__":
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
-    from model import Net, loadNet
+    from model import Net, loadNet, load_res_50
 
     model = Net()
     # model = loadNet("experiment/modeltrained100.pth", 1)
-
+    # model = load_res_50()
     #pre-trained model
     # model.load_state_dict( torch.load("models/model_10.pth"))
     if use_cuda:
@@ -121,10 +121,10 @@ if __name__ == "__main__":
     else:
         print("Using CPU")
 
-    optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, momentum=args.momentum, weight_decay = 3*0.0001)
+    optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, momentum=args.momentum)
     # optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.momentum, 0.999))
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
-    # scheduler =  optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+    scheduler =  optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
 
     def train(epoch, loader):
         model.train()
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                         loss.data.item(),
                     )
                 )
-        # scheduler.step()
+        scheduler.step()
 
     ac_hist = []
 
@@ -198,5 +198,6 @@ if __name__ == "__main__":
                 + model_file
                 + "` to generate the Kaggle formatted csv file\n"
             )
+            break
     print(ac_hist)
     print("TIME:", (time.time()-t0)/60, "minutes")
