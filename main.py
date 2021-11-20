@@ -108,9 +108,9 @@ if __name__ == "__main__":
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
-    from model import Net101_18, Net101_2
+    from model import Net101_18, Net101_18_pre,Net101_2
 
-    model = Net101_18()
+    model = Net101_2()
     # model = loadNet("experiment/modeltrained100.pth", 1)
     # model = load_res_50()
     #pre-trained model
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, momentum=args.momentum, weight_decay=3*0.0001)
     # optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.momentum, 0.999))
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
-    scheduler =  optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+    scheduler =  optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     def train(epoch, loader):
         model.train()
@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
         return ac_hist[-1]
 
-    tresh = 96
+    tresh = 80
     for epoch in range(1, args.epochs + 1):
         if epoch<=args.pseudoepochs:
             train(epoch, pseudo_label_loader)

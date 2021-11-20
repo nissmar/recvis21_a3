@@ -51,9 +51,9 @@ def Net101_2():
     model = models.resnet101(pretrained=True)
     # requires_grad = conv_to_activate([[2,1,i%3] for i in range(3)]+[[4,1,i%3] for i in range(3)])
 
-    # for name, param in model.named_parameters():
-    #     if not(name in requires_grad):
-    #         param.requires_grad = False
+    for name, param in model.named_parameters():
+        if ("bn" in name):
+            param.requires_grad = False
 
     model.fc = nn.Linear(2048, 2, bias=True)
     return model
@@ -61,8 +61,7 @@ def Net101_2():
 
 def Net101_18():
     model = models.resnet101(pretrained=True)
-    # requires_grad = conv_to_activate([[3,22,2],[4,1,1]])
-    requires_grad=[]
+    requires_grad = conv_to_activate([[4,1,1],[4,1,2],[4,1,3],[4,2,1],[4,2,2],[4,2,3]])
     for name, param in model.named_parameters():
         if not(name in requires_grad):
             param.requires_grad = False
@@ -73,13 +72,12 @@ def Net101_18():
 def Net101_18_pre():
     model = models.resnet101(pretrained=True)
     model.fc = nn.Linear(2048, 18, bias=True)
-    model.load_state_dict(torch.load("models/res101_18_init_88.pth"))
+    model.load_state_dict(torch.load("models/res101_18_init_92.pth"))
     print("model preloaded")
     for name, param in model.named_parameters():
-        if ("bn" in name or "layer4" in name):
+        if ("bn" in name):
             param.requires_grad = False
     return model
-
 
 
 

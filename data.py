@@ -14,6 +14,7 @@ my_std = [0.229, 0.224, 0.225]
 data_transforms_train = transforms.Compose(
     [
         transforms.AutoAugment(transforms.AutoAugmentPolicy.IMAGENET),
+
         transforms.Resize((224,224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=my_mean, std=my_std),
